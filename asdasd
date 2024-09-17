@@ -1,0 +1,52 @@
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+# Conexión a la base de datos existente
+DATABASE_URL = "mysql://uwb9nhmz8jxs4x4o:cXonOBM5cQYEidp4hZIr@b6b8wgtllzvktceemz5z-mysql.services.clever-cloud.com:3306/b6b8wgtllzvktceemz5z"
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
+session = Session()
+
+
+
+def obtener_estado_actual_partido(colegio1, colegio2):
+    return session.execute(
+        f"SELECT resultado FROM partidos p "
+        f"JOIN equipos e1 ON p.equipo_local_id = e1.id "
+        f"JOIN colegios c1 ON e1.colegio_id = c1.id "
+        f"JOIN equipos e2 ON p.equipo_visitante_id = e2.id "
+        f"JOIN colegios c2 ON e2.colegio_id = c2.id "
+        f"WHERE c1.nombre = '{colegio1}' AND c2.nombre = '{colegio2}'"
+    ).fetchone()
+
+def obtener_partidos_deporte(deporte):
+    return session.execute(
+        f"SELECT * FROM partidos p "
+        f"JOIN equipos e ON p.equipo_local_id = e.id "
+        f"WHERE e.deporte = '{deporte}'"
+    ).fetchall()
+
+def obtener_estado_actual_colegio(colegio):
+    return session.execute(
+        f"SELECT e.nombre, e.deporte FROM equipos e "
+        f"JOIN colegios c ON e.colegio_id = c.id "
+        f"WHERE c.nombre = '{colegio}'"
+    ).fetchall()
+
+def obtener_informacion_producto(producto):
+    return session.execute(
+        f"SELECT * FROM cantina WHERE producto = '{producto}'"
+    ).fetchall()
+
+def obtener_partidos_cancha(lugar):
+    return session.execute(
+        f"SELECT * FROM partidos WHERE lugar = '{lugar}'"
+    ).fetchall()
+
+# Ejemplo de uso
+if __name__ == '__main__':
+    print("Resultado del partido:", obtener_estado_actual_partido("Monserrat", "San José"))
+    print("Partidos de futbol:", obtener_partidos_deporte("futbol"))
+    print("Posiciones de Monserrat:", obtener_estado_actual_colegio("Monserrat"))
+    print("Info de Pizza:", obtener_informacion_producto("Pizza"))
+    print("Partidos en Estadio Central:", obtener_partidos_cancha("Estadio Central"))
